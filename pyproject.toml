@@ -1,0 +1,42 @@
+[project]
+name = "hyperliquid-quant"
+version = "0.1.0"
+description = "Modular async multi-strategy trading research + execution framework for Hyperliquid"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "mypy>=1.10",
+    "ruff>=0.5",
+]
+
+[[tool.mypy.overrides]]
+module = "hyperliquid.*"
+ignore_missing_imports = true
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+mypy_path = "src"
+explicit_package_bases = true
+
+[tool.ruff]
+line-length = 100
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

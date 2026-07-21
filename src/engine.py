@@ -17,6 +17,7 @@ from strategies.rsi_reversion import RSIReversionStrategy
 from strategies.breakout_volume import BreakoutVolumeStrategy
 from strategy import Strategy
 from strategy_runner import run_strategies
+from state_store import init_db, record_equity_snapshot, record_trade
 
 logging.basicConfig(
     level=logging.INFO,
@@ -63,10 +64,6 @@ async def risk_execution_loop(
     portfolios: dict[str, Portfolio],
     settings: Settings,
 ) -> None:
-    """Each strategy gets routed to its OWN portfolio, keyed by strategy_name.
-    This is what keeps strategies from interfering with each other's positions —
-    they never see or touch another strategy's capital or exposure.
-    """
     while True:
         item = await signal_queue.get()
         if item is None:
@@ -80,14 +77,21 @@ async def risk_execution_loop(
                 "tick=%s symbol=%s strategy=%s action=%s metadata=%s -> REJECTED by risk",
                 tick.event_id, signal.symbol, signal.strategy_name, signal.action, signal.metadata,
             )
-            continue
+        else:
+            report = await execute_order(order, portfolio, current_price=tick.price, settings=settings)
+            logger.info(
+                "tick=%s symbol=%s strategy=%s action=%s metadata=%s -> %s %.5f@%.2f (cash=%.2f)",
+                tick.event_id, report.symbol, signal.strategy_name, signal.action, signal.metadata,
+                report.status, report.filled_size, report.avg_price, portfolio.cash,
+            )
+            record_trade(
+                strategy_name=signal.strategy_name, symbol=report.symbol, side=order.side,
+                size=report.filled_size, avg_price=report.avg_price, status=report.status,
+                cash_after=portfolio.cash,
+            )
 
-        report = await execute_order(order, portfolio, current_price=tick.price, settings=settings)
-        logger.info(
-            "tick=%s symbol=%s strategy=%s action=%s metadata=%s -> %s %.5f@%.2f (cash=%.2f)",
-            tick.event_id, report.symbol, signal.strategy_name, signal.action, signal.metadata,
-            report.status, report.filled_size, report.avg_price, portfolio.cash,
-        )
+        equity = portfolio.cash + portfolio.positions.get(tick.symbol, 0.0) * tick.price
+        record_equity_snapshot(signal.strategy_name, portfolio.cash, equity)
 
 
 async def main() -> None:
@@ -95,6 +99,7 @@ async def main() -> None:
     signal_queue: asyncio.Queue[tuple[Signal, TickEvent] | None] = asyncio.Queue()
 
     settings = Settings()
+    init_db()
     client = HyperliquidClient(settings)
     strategies: list[Strategy] = [
     MACrossoverStrategy(short_period=3, long_period=5),

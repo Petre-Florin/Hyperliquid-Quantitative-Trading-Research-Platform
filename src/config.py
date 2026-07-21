@@ -14,5 +14,4 @@ class Settings(BaseSettings):
     taker_fee_pct: float = 0.00045
     maker_fee_pct: float = 0.00015
     leverage: float = 5.0
-    supabase_url: str = ""
-    supabase_key: str = ""
+    

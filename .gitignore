@@ -9,3 +9,4 @@ __pycache__/
 data/historical/*.csv
 data/backtests/*
 .idea/
+data/state.db

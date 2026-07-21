@@ -22,7 +22,9 @@ class TemplateStrategy:
     def __init__(self, example_period: int = 10) -> None:
         self.example_period = example_period
 
-    def on_tick(self, tick: TickEvent, price_history: list[float]) -> Signal:
+    def on_tick(
+        self, tick: TickEvent, price_history: list[float], volume_history: list[float]
+    ) -> Signal:
         if len(price_history) < self.example_period:
             return Signal(strategy_name=self.name, symbol=tick.symbol, action="HOLD", confidence=0.0)
 

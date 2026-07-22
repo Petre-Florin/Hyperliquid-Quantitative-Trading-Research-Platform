@@ -1,13 +1,14 @@
-from client import ExchangeClient
-from events import ExecutionReport, OrderRequest
+import asyncio
+import logging
+import uuid
+from typing import TYPE_CHECKING
+
 from hyperliquid.info import Info
 from hyperliquid.utils import constants
-from config import Settings
 
-import asyncio
-import uuid
-import logging
-from typing import TYPE_CHECKING
+from client import ExchangeClient
+from config import Settings
+from events import ExecutionReport, OrderRequest
 
 logger = logging.getLogger("hyperliquid_client")
 
@@ -51,5 +52,3 @@ class HyperliquidClient:
 
 if TYPE_CHECKING:
     _: ExchangeClient = HyperliquidClient(Settings())
-
-_: ExchangeClient = HyperliquidClient(Settings())

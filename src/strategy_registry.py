@@ -22,6 +22,7 @@ import importlib
 import inspect
 import pkgutil
 from pathlib import Path
+from typing import cast
 
 import strategies
 from strategy import Strategy
@@ -38,11 +39,16 @@ def discover_strategies() -> dict[str, type[Strategy]]:
 
         module = importlib.import_module(f"strategies.{module_info.name}")
 
-        for _, obj in inspect.getmembers(module, inspect.isclass):
-            if obj.__module__ != module.__name__:
+        for _, raw_obj in inspect.getmembers(module, inspect.isclass):
+            if raw_obj.__module__ != module.__name__:
                 continue  # skip imported classes (e.g. the Strategy protocol itself)
-            if not (hasattr(obj, "name") and hasattr(obj, "on_tick")):
+            if not (hasattr(raw_obj, "name") and hasattr(raw_obj, "on_tick")):
                 continue
+
+            # inspect.getmembers types classes as `type[object]`; hasattr checks above
+            # are the real runtime guarantee that this satisfies the Strategy Protocol,
+            # but mypy can't narrow on hasattr alone, hence the explicit cast here.
+            obj = cast(type[Strategy], raw_obj)
 
             try:
                 instance = obj()

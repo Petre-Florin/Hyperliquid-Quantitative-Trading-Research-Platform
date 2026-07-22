@@ -7,14 +7,18 @@ from events import Signal, TickEvent
 class AlwaysBuyStrategy:
     name = "always_buy"
 
-    def on_tick(self, tick: TickEvent, price_history: list[float]) -> Signal:
+    def on_tick(
+        self, tick: TickEvent, price_history: list[float], volume_history: list[float]
+    ) -> Signal:
         return Signal(strategy_name=self.name, symbol=tick.symbol, action="BUY", confidence=1.0)
 
 
 class AlwaysSellStrategy:
     name = "always_sell"
 
-    def on_tick(self, tick: TickEvent, price_history: list[float]) -> Signal:
+    def on_tick(
+        self, tick: TickEvent, price_history: list[float], volume_history: list[float]
+    ) -> Signal:
         return Signal(strategy_name=self.name, symbol=tick.symbol, action="SELL", confidence=1.0)
 
 

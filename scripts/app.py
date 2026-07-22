@@ -153,7 +153,7 @@ with main_tab_backtest:
                 for row_start in range(0, len(results), cols_per_row):
                     row_results = results[row_start: row_start + cols_per_row]
                     cols = st.columns(len(row_results))
-                    for col, r in zip(cols, row_results):
+                    for col, r in zip(cols, row_results, strict=True):
                         with col:
                             st.metric(r["label"], f"${r['final_value']:.2f}", delta=f"{r['net_pnl']:.2f}")
                             st.caption(
@@ -183,7 +183,7 @@ with main_tab_backtest:
                 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
                 st.subheader("Individual runs")
                 tabs = st.tabs([r["label"] for r in results])
-                for tab, r in zip(tabs, results):
+                for tab, r in zip(tabs, results, strict=True):
                     with tab:
                         steps = [row["step"] for row in r["equity_curve"]]
                         prices_list = [row["price"] for row in r["equity_curve"]]
@@ -194,9 +194,9 @@ with main_tab_backtest:
                         fig2, (ax1, ax2) = plt.subplots(2, 1, figsize=(9, 4.5), sharex=True)
                         ax1.plot(steps, prices_list, color="#ddd", linewidth=0.7, label=f"{symbol} price")
                         if buys:
-                            ax1.scatter(*zip(*buys), color="#68d391", marker="^", s=22, label="BUY", zorder=5)
+                            ax1.scatter(*zip(*buys, strict=True), color="#68d391", marker="^", s=22, label="BUY", zorder=5)
                         if sells:
-                            ax1.scatter(*zip(*sells), color="#fc8181", marker="v", s=22, label="SELL", zorder=5)
+                            ax1.scatter(*zip(*sells, strict=True), color="#fc8181", marker="v", s=22, label="SELL", zorder=5)
                         ax1.legend(fontsize=7)
                         ax1.grid(alpha=0.15)
                         ax2.plot(steps, equity, color="#4facfe", linewidth=1.0, label="Equity")
